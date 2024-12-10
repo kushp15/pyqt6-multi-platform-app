@@ -15,20 +15,28 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest]
+        os: [macos-latest, windows-latest]  # Only macOS and Windows
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - name: Upgrade pip and install wheel
+      run: |
+        pip install --upgrade pip setuptools wheel
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
       with:
-        python-version: '3.11'
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
 
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
+      timeout-minutes: 10  # Extend timeout
 
     - name: Run tests
       run: |

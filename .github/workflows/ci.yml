@@ -1,0 +1,46 @@
+name: CI/CD for PyQt6 App
+
+on:
+  push:
+    branches:
+      - main
+      - macos
+      - windows
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run tests
+      run: |
+        pytest
+
+    - name: Build Application
+      run: |
+        pip install pyinstaller
+        pyinstaller --onefile main.py
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: PyQt6-Build
+        path: dist/
